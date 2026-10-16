@@ -546,7 +546,28 @@ base_sha=$(cd "$case_dir" && git rev-parse HEAD)
 (cd "$case_dir" && git checkout -q -b stale "$fork" && git checkout -q "$base_sha" -- manifest.json)
 echo '// later change' >>"${case_dir}/src/main.go"
 commit_change
-assert_fail_containing "stale branch forked before the first manifest" "FAIL"
+assert_fail_containing "stale branch forked before the first manifest" "FAIL" "forked before manifest.json existed"
+
+# --- case 23 (ut-docs#4484): the first-release path still refuses a version
+# that is already tagged -- the same silent never-ships failure.
+fresh_repo
+first_version=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"])' "${case_dir}/manifest.json")
+(cd "$case_dir" && git rm -q manifest.json && git commit -q -m "repo start: no manifest yet" && git tag "v${first_version}")
+base_sha=$(cd "$case_dir" && git rev-parse HEAD)
+(cd "$case_dir" && git checkout -q HEAD~1 -- manifest.json)
+echo "first release" >>"${case_dir}/README.md"
+commit_change
+assert_fail_containing "first PR: version already tagged" "FAIL" "v${first_version}" "ALREADY TAGGED"
+
+# --- case 24 (ut-docs#4484): no manifest.json at the merge-base OR the head
+# -> PASS. A new repo's early PR (README, licence) before the manifest
+# exists releases nothing, so there is nothing to bump.
+fresh_repo
+(cd "$case_dir" && git rm -q manifest.json && git commit -q -m "repo start: no manifest yet")
+base_sha=$(cd "$case_dir" && git rev-parse HEAD)
+echo "early docs" >>"${case_dir}/README.md"
+commit_change
+assert_pass "no manifest.json at the merge-base or the head"
 
 if [ "$FAILS" -ne 0 ]; then
     echo ""
