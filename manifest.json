@@ -1,0 +1,68 @@
+{
+  "id": "com.universaltill.import-eposnow",
+  "name": "Epos Now import",
+  "version": "0.1.0",
+  "description": "Moves a shop from Epos Now to Universal Till: reads your products, categories, VAT rates and stock from your own Epos Now account over the Epos Now API, with an API key and secret you create in Epos Now. Preview first, then import; run it again at any time to bring changed products across — each product stays linked to its Epos Now record, so nothing is duplicated. Read-only on the Epos Now side.",
+  "author": "Universal Till",
+  "website": "https://universaltill.com",
+  "canonical_type": "import",
+  "runtime": "wasm",
+  "entrypoint": "./bin/plugin.wasm",
+  "device_arch": "any",
+  "min_pos_version": "0.34.8",
+  "permissions": [
+    "events:receive",
+    "net:api.eposnowhq.com",
+    "http:stream",
+    "items:write",
+    "stock:write"
+  ],
+  "locales": [
+    "en-US",
+    "de-DE",
+    "tr-TR"
+  ],
+  "entries": [
+    {
+      "type": "import",
+      "key": "eposnow",
+      "label": "import_eposnow.entry.label",
+      "source": "api",
+      "entities": [
+        "items",
+        "stock"
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "key": "api_key",
+      "default_value": "",
+      "scope": "global",
+      "type": "secret",
+      "label": "import_eposnow.settings.api_key",
+      "help": "import_eposnow.settings.api_key.help"
+    },
+    {
+      "key": "api_secret",
+      "default_value": "",
+      "scope": "global",
+      "type": "secret",
+      "label": "import_eposnow.settings.api_secret",
+      "help": "import_eposnow.settings.api_secret.help"
+    },
+    {
+      "key": "location_id",
+      "default_value": "",
+      "scope": "global",
+      "label": "import_eposnow.settings.location_id",
+      "help": "import_eposnow.settings.location_id.help"
+    }
+  ],
+  "hooks": [
+    {
+      "event": "import.requested.ask",
+      "action": "import"
+    }
+  ]
+}

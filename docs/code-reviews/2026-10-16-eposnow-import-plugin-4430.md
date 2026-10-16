@@ -55,6 +55,11 @@ All of these pass: `gofmt -l`, `go vet` (host and wasip1), `go test -count=1 ./.
 - **Live test:** against the Epos Now developer account (ut-docs#4436). The base URL is `api.eposnowhq.com` per Epos Now's docs; the Swagger's `host` field says `developer.eposnowhq.com`.
 - **`min_pos_version` 0.34.8:** v0.34.7 was tagged before universal-till#1978 merged (dec32007f), so the first till with API-source imports is 0.34.8.
 
+## Release
+
+- The merge auto-tags `v0.1.0`, and `release.yml` uploads it to the marketplace at `cloud.universaltill.com`. The repo secrets `MARKETPLACE_BASE_URL` and `MARKETPLACE_UPLOAD_TOKEN` were set from Key Vault and never printed.
+- The repo variable `AUTO_APPROVE` is deliberately **not** set. The release waits for a human approval in the marketplace, so no till can install it until the live check against the Epos Now developer account (ut-docs#4436) passes.
+
 ## Verdict
 
 Safe to merge once universal-till#1978 is on main and B1's pin is in.
