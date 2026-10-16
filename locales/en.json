@@ -1,0 +1,9 @@
+{
+  "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.settings.api_key": "Epos Now API key",
+  "import_eposnow.settings.api_key.help": "Create an API device in your Epos Now Back Office and copy its key here. Stored encrypted; used only to read your Epos Now data.",
+  "import_eposnow.settings.api_secret": "Epos Now API secret",
+  "import_eposnow.settings.api_secret.help": "The secret of the same API device. Stored encrypted.",
+  "import_eposnow.settings.location_id": "Epos Now location number",
+  "import_eposnow.settings.location_id.help": "Which Epos Now location's VAT rates and stock to import. Leave empty to use the first location."
+}

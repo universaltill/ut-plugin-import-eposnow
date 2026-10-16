@@ -1,0 +1,9 @@
+{
+  "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.settings.api_key": "Epos Now API-Schlüssel",
+  "import_eposnow.settings.api_key.help": "Legen Sie in Ihrem Epos Now Back Office ein API-Gerät an und kopieren Sie dessen Schlüssel hierher. Wird verschlüsselt gespeichert und nur zum Lesen Ihrer Epos Now-Daten verwendet.",
+  "import_eposnow.settings.api_secret": "Epos Now API-Secret",
+  "import_eposnow.settings.api_secret.help": "Das API-Secret desselben API-Geräts. Wird verschlüsselt gespeichert.",
+  "import_eposnow.settings.location_id": "Epos Now-Standortnummer",
+  "import_eposnow.settings.location_id.help": "Von welchem Epos Now-Standort Mehrwertsteuersätze und Bestand importiert werden. Leer lassen, um den ersten Standort zu verwenden."
+}

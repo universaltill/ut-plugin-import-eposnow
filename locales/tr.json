@@ -1,0 +1,9 @@
+{
+  "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.settings.api_key": "Epos Now API anahtarı",
+  "import_eposnow.settings.api_key.help": "Epos Now Back Office'te bir API cihazı oluşturun ve anahtarını buraya kopyalayın. Şifreli saklanır; yalnızca Epos Now verilerinizi okumak için kullanılır.",
+  "import_eposnow.settings.api_secret": "Epos Now API gizli anahtarı",
+  "import_eposnow.settings.api_secret.help": "Aynı API cihazının gizli anahtarı. Şifreli saklanır.",
+  "import_eposnow.settings.location_id": "Epos Now konum numarası",
+  "import_eposnow.settings.location_id.help": "KDV oranları ve stoğu hangi Epos Now konumundan içe aktarılacak. İlk konumu kullanmak için boş bırakın."
+}
