@@ -24,6 +24,8 @@ type Row struct {
 	VATRateBP    *int64   `json:"vat_rate_bp,omitempty"`
 	StockQty     *float64 `json:"stock_qty,omitempty"`
 	Active       *bool    `json:"active"`
+	// Description is free text; "" leaves the item's description as it is.
+	Description string `json:"description,omitempty"`
 }
 
 // categoryDepth is core's category_path limit (catsync categoryDepth).

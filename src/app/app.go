@@ -66,6 +66,9 @@ func handleImport(ev plugin.Event) (any, error) {
 		return fail(textsFor("").s("import_eposnow.reply.error.bad_request")), nil
 	}
 	t := textsFor(req.Locale)
+	if req.Source == "file" {
+		return handleFile(ev)
+	}
 	switch {
 	case req.EntryKey != EntryKey:
 		return fail(t.s("import_eposnow.reply.error.unknown_entry")), nil

@@ -1,5 +1,6 @@
 {
   "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.file.label": "Epos Now (Produktexport-Datei)",
   "import_eposnow.settings.api_key": "Epos Now API-Schlüssel",
   "import_eposnow.settings.api_key.help": "Legen Sie in Ihrem Epos Now Back Office ein API-Gerät an und kopieren Sie dessen Schlüssel hierher. Wird verschlüsselt gespeichert und nur zum Lesen Ihrer Epos Now-Daten verwendet.",
   "import_eposnow.settings.api_secret": "Epos Now API-Secret",

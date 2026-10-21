@@ -2,10 +2,14 @@
 
 WASM `import` plugin (ADR-0009 one-repo-per-plugin, ADR-0001, ADR-0121)
 in Go on the official guest SDK `github.com/universaltill/universal-till/sdk/plugin`
-— never hand-rolled `//go:wasmimport` lines. One API-source import entry
+— never hand-rolled `//go:wasmimport` lines. Two import entries: an API-source one
 (ADR-0161, ut-docs#4430): on `import.requested.ask` it reads Epos Now's V4
 API and hands ADR-0051 item rows back with `plugin.ImportRowsSubmit`; core
-(`internal/catsync`) plans or applies them. `src/eposnow` is the read-only
+(`internal/catsync`) plans or applies them. The second, `eposnow-file` (`src/app/file.go`, ADR-0164 §2, ut-docs#3377), parses
+the Back Office product-export CSV in the import sandbox (file reads and row
+submits only: no network, settings or secrets); its fixture
+`src/app/testdata/products.csv` is invented data in the real export's shape,
+never a shop's file. `src/eposnow` is the read-only
 API client, `src/app` the handler and the mapping, `src/main.go`
 `plugin.Run`.
 

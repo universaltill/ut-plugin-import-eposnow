@@ -1,5 +1,6 @@
 {
   "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.file.label": "Epos Now (ürün dışa aktarım dosyası)",
   "import_eposnow.settings.api_key": "Epos Now API anahtarı",
   "import_eposnow.settings.api_key.help": "Epos Now Back Office'te bir API cihazı oluşturun ve anahtarını buraya kopyalayın. Şifreli saklanır; yalnızca Epos Now verilerinizi okumak için kullanılır.",
   "import_eposnow.settings.api_secret": "Epos Now API gizli anahtarı",
