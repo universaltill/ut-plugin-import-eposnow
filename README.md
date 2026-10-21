@@ -1,19 +1,54 @@
 # Epos Now import (`com.universaltill.import-eposnow`)
 
-Moves a shop from **Epos Now** to Universal Till over the Epos Now V4 API:
-products, their categories, VAT rates and stock levels. Run a **preview**
-first, then **import**. Run it again whenever you like — each product
+Moves a shop from **Epos Now** to Universal Till two ways: by uploading the
+**product export** you download from the Epos Now Back Office (nothing to
+edit, no key needed), or over the Epos Now V4 API (products, categories, VAT
+rates and stock levels). Run a **preview** first, then **import**. Run it again whenever you like — each product
 stays linked to its Epos Now record, so a changed price or name updates
 the item instead of adding a duplicate. The plugin only *reads* from Epos
 Now; it never changes anything there.
 
-Needs Universal Till **0.34.8** or later (API-source imports, ADR-0161).
+Needs Universal Till **0.34.14** or later (API-source imports, ADR-0161;
+file imports, ADR-0164; `;`-separated exports, ut-docs#4726).
 
 > **Status:** built from the published Epos Now V4 API specification and
 > tested against spec-shaped data. It has not yet been confirmed against a
 > live Epos Now account (ut-docs#4436).
 
-## Setting up
+## Importing the product export (no key needed)
+
+1. In your Epos Now Back Office, export your products (the CSV download,
+   one page at a time if Epos Now splits it) and keep the file as it is.
+2. In Universal Till open the import screen and upload the file. The till
+   recognises it as an Epos Now export from its column names
+   (`Name`, `SalePriceExTax`, `SalePriceIncTax`, `SalePriceTaxGroupId`) and
+   shows this plugin's preview. *Import* applies it.
+
+The export has no Id column, so each product is linked by its barcode, else
+by its `ArticleCode`, else by its name. Run it again and a changed price
+updates the item instead of adding a duplicate; a **rename** keeps the link
+only for a product that has a barcode or an `ArticleCode` (a renamed product
+with neither is added as a new one), and two products with the same name
+and neither are told apart by their order in the file. Use either this file
+import or the API import for a shop, not both: each links products its own
+way, so the second would not recognise the first's products
+(ut-docs#4727). What comes across: name, category
+(`CategoryId` holds the category's name), barcode, the VAT-inclusive price
+(a net-only price is grossed up with the product's rate), the VAT rate read
+from a tax group named like `20VAT`, `5VAT` or `0VAT` (any other group name
+is counted and left to the till's default), `ArticleCode` as the SKU (the
+till generates one when it is empty), a description that differs from the
+name, and "sell on till" as active. **Not in this file:** stock (Epos Now
+exports it separately) and the recommended retail price `RRPrice`
+(ut-docs#4725). Files use `;`, `,` or tab as separator; up to 20,000
+products and 32 MiB. Prices must be plain decimals (`8.99`, `8,99`); a
+name, category or description is cleaned of line breaks and invisible
+characters. The file is read as UTF-8.
+
+The file entry runs in the till's import sandbox: it can read the uploaded
+file and hand back rows, nothing else (no network, no settings).
+
+## Setting up the API import
 
 1. In your Epos Now Back Office, create an **API device** and note its
    key and secret.

@@ -73,6 +73,9 @@ func handleImport(ev plugin.Event) (any, error) {
 	if err := ev.Decode(&req); err != nil {
 		return fail("the import request could not be read"), nil
 	}
+	if req.Source == "file" {
+		return handleFile(ev)
+	}
 	switch {
 	case req.EntryKey != EntryKey:
 		return fail("unknown import entry"), nil

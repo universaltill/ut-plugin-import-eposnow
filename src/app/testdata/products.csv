@@ -1,0 +1,11 @@
+﻿Name;CategoryId;SalePriceExTax;CostPriceIncTax;SalePriceIncTax;ButtonColourId;Barcode;Description;CostPriceExTax;SalePriceTaxGroupId;IsVariablePrice;TaxExemptEligible;ContainerFeeId;BrandName;SupplierName;VariantDescription;ColourName;SellOnTill;TillOrder;RRPrice;OrderCode;ArticleCode;PopupNoteId;MultiChoiceNoteId;Margin;IsStockTracked;ImageUrl
+Acme Double Edge Blades;Shaving;7.49;;8.99;;5000000000011;Acme Double Edge Blades;;20VAT;no;no;No Deposit Return Scheme;Acme;None;;None;yes;;;;;;;;no;
+Acme Clipper Comb;;8.96;;10.75;;;Comb, yellow, fits all Acme clippers;;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;12.00;;ART-9;;;;no;
+Bad Barcode Brush;Accessories;2.50;;3.00;;ab cd!;Bad Barcode Brush;;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+Discontinued Spray;Hair Products;4.58;;5.50;;5000000000028;Discontinued Spray;;20VAT;no;no;No Deposit Return Scheme;;None;;None;no;;;;;;;;no;
+Mystery Rate Item;Accessories;1.00;;1.10;;5000000000035;Mystery Rate Item;;Mystery;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+Gift Box;Accessories;5.00;;6.00;;;Gift Box;;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+Gift Box;Accessories;9.00;;10.80;;;Gift Box;;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+Net Only Tonic;Hair Products;10.00;;;;5000000000042;Net Only Tonic;;5VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+"Tea; Green";Skin Care;2.00;;2.40;;5000000000059;"Tea; Green";;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;
+;Accessories;1.00;;1.20;;5000000000066;;;20VAT;no;no;No Deposit Return Scheme;;None;;None;yes;;;;;;;;no;

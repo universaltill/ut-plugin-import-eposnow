@@ -23,7 +23,7 @@ if not m.get("locales"): errs.append("missing locales")
 # An older till fails signature verification on the entry's `source`
 # field: name the first till with API-source imports (ADR-0161).
 mpv = tuple(int(x) for x in re.findall(r'\d+', m.get("min_pos_version", "0"))[:3])
-if mpv < (0, 34, 8): errs.append("min_pos_version must be >= 0.34.8 (first till with API-source imports, ADR-0161)")
+if mpv < (0, 34, 14): errs.append("min_pos_version must be >= 0.34.14 (first till whose header-row claim reads ';' exports, ut-docs#4726; API-source imports ADR-0161 and file-rows entries ADR-0164 came before)")
 
 # Least privilege: exactly what the import uses — the hook, the one API
 # host, and the two write grants core checks (<entity>:write).
@@ -32,7 +32,7 @@ if sorted(m.get("permissions", [])) != sorted(want_perms):
     errs.append(f"permissions must be exactly {want_perms}")
 
 entries = m.get("entries", [])
-if len(entries) != 1: errs.append("exactly one entry (the Epos Now import)")
+if len(entries) != 2: errs.append("exactly two entries (the Epos Now API import and the export-file import)")
 else:
     e = entries[0]
     if e.get("type") != "import" or e.get("key") != "eposnow": errs.append("entry must be {type: import, key: eposnow}")
@@ -40,6 +40,13 @@ else:
     if e.get("file_formats"): errs.append("an api source declares no file_formats")
     if e.get("entities") != ["items", "stock"]: errs.append("entry entities must be [items, stock]")
     if not e.get("label"): errs.append("entry needs a label")
+    f = entries[1]
+    if f.get("type") != "import" or f.get("key") != "eposnow-file": errs.append("second entry must be {type: import, key: eposnow-file}")
+    if f.get("source") != "file": errs.append("the export-file entry source must be 'file' (ADR-0164 section 2)")
+    if f.get("file_formats") != [".csv"]: errs.append("the export-file entry reads .csv only")
+    if not f.get("file_headers"): errs.append("the export-file entry needs file_headers (the header-row claim)")
+    if f.get("entities") != ["items"]: errs.append("the export-file entry entities must be [items] (an export has no stock)")
+    if not f.get("label"): errs.append("the export-file entry needs a label")
 
 en = json.load(open("locales/en.json"))
 for e in entries:
