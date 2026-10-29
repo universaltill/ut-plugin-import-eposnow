@@ -1,15 +1,15 @@
 {
   "id": "com.universaltill.import-eposnow",
   "name": "Epos Now import",
-  "version": "0.1.0",
-  "description": "Moves a shop from Epos Now to Universal Till: reads your products, categories, VAT rates and stock from your own Epos Now account over the Epos Now API, with an API key and secret you create in Epos Now. Preview first, then import; run it again at any time to bring changed products across — each product stays linked to its Epos Now record, so nothing is duplicated. Read-only on the Epos Now side.",
+  "version": "0.2.0",
+  "description": "Moves a shop from Epos Now to Universal Till. Either upload the product export you download from your Epos Now Back Office (exactly as downloaded, nothing to edit), or read your products, categories, VAT rates and stock from your own Epos Now account over the Epos Now API, with an API key and secret you create in Epos Now. Preview first, then import; run it again at any time to bring changed products across without duplicates. Read-only on the Epos Now side.",
   "author": "Universal Till",
   "website": "https://universaltill.com",
   "canonical_type": "import",
   "runtime": "wasm",
   "entrypoint": "./bin/plugin.wasm",
   "device_arch": "any",
-  "min_pos_version": "0.34.8",
+  "min_pos_version": "0.34.14",
   "permissions": [
     "events:receive",
     "net:api.eposnowhq.com",
@@ -31,6 +31,24 @@
       "entities": [
         "items",
         "stock"
+      ]
+    },
+    {
+      "type": "import",
+      "key": "eposnow-file",
+      "label": "import_eposnow.file.label",
+      "source": "file",
+      "entities": [
+        "items"
+      ],
+      "file_formats": [
+        ".csv"
+      ],
+      "file_headers": [
+        "Name",
+        "SalePriceExTax",
+        "SalePriceIncTax",
+        "SalePriceTaxGroupId"
       ]
     }
   ],

@@ -1,5 +1,6 @@
 {
   "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.file.label": "Epos Now (product export file)",
   "import_eposnow.settings.api_key": "Epos Now API key",
   "import_eposnow.settings.api_key.help": "Create an API device in your Epos Now Back Office and copy its key here. Stored encrypted; used only to read your Epos Now data.",
   "import_eposnow.settings.api_secret": "Epos Now API secret",
