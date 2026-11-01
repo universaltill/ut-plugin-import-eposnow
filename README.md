@@ -31,6 +31,11 @@ Needs Universal Till **0.34.8** or later (API-source imports, ADR-0161).
    your Epos Now account and location — and shows what would change;
    *Import* applies it.
 
+The answer — the preview summary, the import summary and any refusal —
+is in the operator's language (English, German or Turkish; any other
+language gets English). A till older than 0.34.12 does not send its
+language, so the answer is in English there.
+
 ## What comes across
 
 | Epos Now | Universal Till |

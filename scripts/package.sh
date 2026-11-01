@@ -19,7 +19,13 @@ entries=(manifest.json README.md bin)
 # locales/*.json carry the entry label, the panel's text and the job
 # progress messages (architecture/plugin-architecture.md §7); the till reads
 # them from the INSTALLED bundle, so they must ship (ut-docs#1883 review).
-[ -d locales ] && entries+=(locales)
+# Only the .json files: locales/embed.go compiles them into the wasm for the
+# import's own replies (ut-docs#4648) and is source, not bundle content.
+if [ -d locales ]; then
+  shopt -s nullglob
+  entries+=(locales/*.json)
+  shopt -u nullglob
+fi
 # COPYFILE_DISABLE stops macOS tar shipping AppleDouble ._* junk (the
 # marketplace bundle-hygiene gate rejects it).
 COPYFILE_DISABLE=1 tar -czf "$OUT" "${entries[@]}"
