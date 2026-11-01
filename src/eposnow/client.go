@@ -88,6 +88,42 @@ func (e *StatusError) Error() string {
 	return fmt.Sprintf("Epos Now answered HTTP %d for %s", e.Status, e.Resource)
 }
 
+// Error is a failure the reply names by its Code, so the import can
+// answer it in the operator's language (ut-docs#4648); Error() is the
+// English text.
+type Error struct {
+	Code     string // one of the Code* constants
+	Resource string
+	Limit    int   // CodeTooLarge (MiB), CodeTooManyPages
+	Err      error // CodeUnreachable: the till's refusal or the network failure
+}
+
+// Error codes.
+const (
+	CodeUnreachable    = "unreachable"
+	CodeUnexpected     = "unexpected"
+	CodeTooLarge       = "too_large"
+	CodeTooManyPages   = "too_many_pages"
+	CodeTooManyRecords = "too_many_records"
+)
+
+func (e *Error) Error() string {
+	switch e.Code {
+	case CodeUnreachable:
+		return fmt.Sprintf("could not reach Epos Now (%s): %v", e.Resource, e.Err)
+	case CodeUnexpected:
+		return fmt.Sprintf("Epos Now sent an unexpected %s answer", e.Resource)
+	case CodeTooLarge:
+		return fmt.Sprintf("an Epos Now %s page is larger than the %d MiB page limit", e.Resource, e.Limit)
+	case CodeTooManyPages:
+		return fmt.Sprintf("Epos Now %s has more than %d pages; stopped", e.Resource, e.Limit)
+	default: // CodeTooManyRecords
+		return fmt.Sprintf("Epos Now %s has more than 100,000 records; stopped", e.Resource)
+	}
+}
+
+func (e *Error) Unwrap() error { return e.Err }
+
 // Client reads one Epos Now account. Deadline (zero: none) is when the
 // run must stop: no request starts, and no retry waits, past it.
 type Client struct {
@@ -131,7 +167,7 @@ func (c *Client) get(path, resource string, out any) error {
 		if err != nil {
 			// The till's own refusal or a network failure: not retried
 			// (a denied egress never heals within the run).
-			return fmt.Errorf("could not reach Epos Now (%s): %w", resource, err)
+			return &Error{Code: CodeUnreachable, Resource: resource, Err: err}
 		}
 		switch s := resp.Status; {
 		case s == 401 || s == 403:
@@ -158,14 +194,14 @@ func (c *Client) get(path, resource string, out any) error {
 			return tooLarge(resource)
 		}
 		if err := json.Unmarshal(resp.Body, out); err != nil {
-			return fmt.Errorf("Epos Now sent an unexpected %s answer", resource)
+			return &Error{Code: CodeUnexpected, Resource: resource}
 		}
 		return nil
 	}
 }
 
 func tooLarge(resource string) error {
-	return fmt.Errorf("an Epos Now %s page is larger than the %d MiB page limit", resource, pageLimitMiB)
+	return &Error{Code: CodeTooLarge, Resource: resource, Limit: pageLimitMiB}
 }
 
 // pastDeadline: would waiting d from now reach the run's deadline?
@@ -204,7 +240,7 @@ func walk[T any](c *Client, resource string, fn func([]T) error) error {
 			return err
 		}
 	}
-	return fmt.Errorf("Epos Now %s has more than %d pages; stopped", resource, MaxPages)
+	return &Error{Code: CodeTooManyPages, Resource: resource, Limit: MaxPages}
 }
 
 // listAll reads every page of resource into memory, bounded by
@@ -213,7 +249,7 @@ func listAll[T any](c *Client, resource string) ([]T, error) {
 	var all []T
 	err := walk(c, resource, func(p []T) error {
 		if len(all)+len(p) > MaxListRecords {
-			return fmt.Errorf("Epos Now %s has more than 100,000 records; stopped", resource)
+			return &Error{Code: CodeTooManyRecords, Resource: resource}
 		}
 		all = append(all, p...)
 		return nil

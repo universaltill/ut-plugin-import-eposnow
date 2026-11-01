@@ -5,12 +5,12 @@
 // (commit) them only after this plugin answers ok.
 //
 // Nothing here logs: credentials and row contents never reach the log, and
-// the answer carries counts and the account/location names only.
+// the answer carries counts and the account/location names only. The
+// answer is in the operator's language (the ask's locale, ut-docs#4648).
 package app
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -50,14 +50,6 @@ var doer eposnow.Doer = eposnow.StreamDoer{}
 // Handlers is every event the plugin answers; each has a manifest hook.
 func Handlers() plugin.Handlers { return plugin.Handlers{"import.requested.ask": handleImport} }
 
-// request is the API-source "import.requested.ask" payload.
-type request struct {
-	EntryKey string   `json:"entry_key"`
-	Entities []string `json:"entities"`
-	Mode     string   `json:"mode"`
-	Source   string   `json:"source"`
-}
-
 func fail(msg string) map[string]any { return map[string]any{"ok": false, "error": msg} }
 
 func setting(key string) string {
@@ -69,17 +61,18 @@ func setting(key string) string {
 }
 
 func handleImport(ev plugin.Event) (any, error) {
-	var req request
+	var req plugin.ImportRequest
 	if err := ev.Decode(&req); err != nil {
-		return fail("the import request could not be read"), nil
+		return fail(textsFor("").s("import_eposnow.reply.error.bad_request")), nil
 	}
+	t := textsFor(req.Locale)
 	switch {
 	case req.EntryKey != EntryKey:
-		return fail("unknown import entry"), nil
+		return fail(t.s("import_eposnow.reply.error.unknown_entry")), nil
 	case req.Source != "api":
-		return fail("the Epos Now import reads the Epos Now API, not a file"), nil
+		return fail(t.s("import_eposnow.reply.error.not_a_file")), nil
 	case req.Mode != "preview" && req.Mode != "commit":
-		return fail("mode must be preview or commit"), nil
+		return fail(t.s("import_eposnow.reply.error.bad_mode")), nil
 	}
 	items, stock := false, false
 	for _, e := range req.Entities {
@@ -87,20 +80,20 @@ func handleImport(ev plugin.Event) (any, error) {
 		stock = stock || e == "stock"
 	}
 	if !items {
-		return fail("the Epos Now import needs the items entity (items:write)"), nil
+		return fail(t.s("import_eposnow.reply.error.needs_items")), nil
 	}
 	key, secret := setting("api_key"), setting("api_secret")
 	if key == "" || secret == "" {
-		return fail("enter the Epos Now API key and secret in this plugin's settings first"), nil
+		return fail(t.s("import_eposnow.reply.error.no_credentials")), nil
 	}
 	c := eposnow.New(doer, key, secret)
 	c.Sleep = sleep
 	c.Now = now
 	res, err := run(c, stock)
 	if err != nil {
-		return fail(err.Error()), nil
+		return fail(t.errText(err)), nil
 	}
-	return map[string]any{"ok": true, "message": res.message(req.Mode, stock), "counts": map[string]int{"items": res.rows}}, nil
+	return map[string]any{"ok": true, "message": res.message(t, req.Mode, stock), "counts": map[string]int{"items": res.rows}}, nil
 }
 
 // result is one run's counts.
@@ -112,35 +105,32 @@ type result struct {
 	cutNames            int
 }
 
-func (r result) message(mode string, stock bool) string {
+func (r result) message(t texts, mode string, stock bool) string {
 	var b strings.Builder
 	if mode == "preview" {
-		fmt.Fprintf(&b, "Connected to Epos Now account %q. ", r.company)
+		b.WriteString(t.s("import_eposnow.reply.connected", "company", r.company) + " ")
 	} else {
-		fmt.Fprintf(&b, "Epos Now account %q: ", r.company)
+		b.WriteString(t.s("import_eposnow.reply.account", "company", r.company) + " ")
 	}
-	fmt.Fprintf(&b, "%d products read at location %q", r.rows, r.location)
+	b.WriteString(t.n("import_eposnow.reply.read", r.rows, "location", r.location))
 	if !stock {
-		b.WriteString(", stock not imported")
+		b.WriteString(", " + t.s("import_eposnow.reply.stock_not_imported"))
 	}
 	var notes []string
-	if r.grossedUp > 0 {
-		notes = append(notes, plural(r.grossedUp, "net price", "net prices")+" grossed up with VAT")
-	}
-	if r.netNoVAT > 0 {
-		notes = append(notes, plural(r.netNoVAT, "net price", "net prices")+" had no VAT rate and were imported as they are")
-	}
-	if r.badBarcodes > 0 {
-		notes = append(notes, plural(r.badBarcodes, "barcode", "barcodes")+" dropped (not a valid barcode)")
-	}
-	if r.badVAT > 0 {
-		notes = append(notes, plural(r.badVAT, "VAT rate", "VAT rates")+" dropped (outside 0–100%)")
-	}
-	if r.cutNames > 0 {
-		notes = append(notes, plural(r.cutNames, "name", "names")+" shortened to the till's limit")
-	}
-	if r.skipped > 0 {
-		notes = append(notes, fmt.Sprintf("%d skipped without an Epos Now Id", r.skipped))
+	for _, n := range []struct {
+		key   string
+		count int
+	}{
+		{"import_eposnow.reply.note.grossed_up", r.grossedUp},
+		{"import_eposnow.reply.note.net_no_vat", r.netNoVAT},
+		{"import_eposnow.reply.note.bad_barcode", r.badBarcodes},
+		{"import_eposnow.reply.note.bad_vat", r.badVAT},
+		{"import_eposnow.reply.note.name_cut", r.cutNames},
+		{"import_eposnow.reply.note.skipped", r.skipped},
+	} {
+		if n.count > 0 {
+			notes = append(notes, t.n(n.key, n.count))
+		}
 	}
 	if len(notes) > 0 {
 		b.WriteString(" (" + strings.Join(notes, "; ") + ")")
@@ -159,13 +149,6 @@ func (r *result) count(n mapNotes) {
 	if n.nameCut {
 		r.cutNames++
 	}
-}
-
-func plural(n int, one, many string) string {
-	if n == 1 {
-		return "1 " + one
-	}
-	return strconv.Itoa(n) + " " + many
 }
 
 // run fetches the reference data, then streams the products through the
@@ -265,7 +248,7 @@ func chooseLocation(c *eposnow.Client) (eposnow.Location, error) {
 	if s := setting("location_id"); s != "" {
 		n, err := strconv.ParseInt(s, 10, 64)
 		if err != nil || n <= 0 {
-			return eposnow.Location{}, errors.New("the location_id setting must be an Epos Now location number, or empty for the first location")
+			return eposnow.Location{}, refuse("import_eposnow.reply.error.bad_location_setting")
 		}
 		want = n
 	}
@@ -279,18 +262,18 @@ func chooseLocation(c *eposnow.Client) (eposnow.Location, error) {
 		}
 	}
 	if want != 0 {
-		return eposnow.Location{}, fmt.Errorf("Epos Now has no location %d (the location_id setting)", want)
+		return eposnow.Location{}, refuse("import_eposnow.reply.error.no_such_location", "id", strconv.FormatInt(want, 10))
 	}
-	return eposnow.Location{}, errors.New("this Epos Now account has no locations")
+	return eposnow.Location{}, refuse("import_eposnow.reply.error.no_locations")
 }
 
 func submitError(err error) error {
 	switch {
 	case errors.Is(err, plugin.ErrQuota):
-		return errors.New("this Epos Now account has more products than the till imports in one run (20,000)")
+		return refuse("import_eposnow.reply.error.quota")
 	case errors.Is(err, plugin.ErrDenied):
-		return errors.New("the till did not accept item rows from this import — check that the plugin holds items:write")
+		return refuse("import_eposnow.reply.error.denied")
 	default:
-		return errors.New("the till did not accept a batch of rows from this import")
+		return refuse("import_eposnow.reply.error.batch_refused")
 	}
 }
