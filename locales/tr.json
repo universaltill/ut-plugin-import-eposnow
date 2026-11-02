@@ -1,5 +1,6 @@
 {
   "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.file.label": "Epos Now (ürün dışa aktarım dosyası)",
   "import_eposnow.settings.api_key": "Epos Now API anahtarı",
   "import_eposnow.settings.api_key.help": "Epos Now Back Office'te bir API cihazı oluşturun ve anahtarını buraya kopyalayın. Şifreli saklanır; yalnızca Epos Now verilerinizi okumak için kullanılır.",
   "import_eposnow.settings.api_secret": "Epos Now API gizli anahtarı",
@@ -44,5 +45,25 @@
   "import_eposnow.reply.error.unexpected": "Epos Now beklenmeyen bir {{resource}} yanıtı gönderdi",
   "import_eposnow.reply.error.too_large": "Bir Epos Now {{resource}} sayfası {{limit}} MiB sayfa sınırından büyük",
   "import_eposnow.reply.error.too_many_pages": "Epos Now {{resource}} {{limit}} sayfadan fazla; durduruldu",
-  "import_eposnow.reply.error.too_many_records": "Epos Now {{resource}} 100.000 kayıttan fazla; durduruldu"
+  "import_eposnow.reply.error.too_many_records": "Epos Now {{resource}} 100.000 kayıttan fazla; durduruldu",
+  "import_eposnow.reply.file.read.one": "Epos Now dışa aktarımı: {{count}} ürün okundu, stok bu dosyada yok",
+  "import_eposnow.reply.file.read.other": "Epos Now dışa aktarımı: {{count}} ürün okundu, stok bu dosyada yok",
+  "import_eposnow.reply.file.note.grossed_up.one": "{{count}} net fiyat KDV ile brüte çevrildi",
+  "import_eposnow.reply.file.note.grossed_up.other": "{{count}} net fiyat KDV ile brüte çevrildi",
+  "import_eposnow.reply.file.note.net_no_vat.one": "{{count}} net fiyatın KDV oranı yoktu, olduğu gibi içe aktarıldı",
+  "import_eposnow.reply.file.note.net_no_vat.other": "{{count}} net fiyatın KDV oranı yoktu, olduğu gibi içe aktarıldı",
+  "import_eposnow.reply.file.note.bad_barcode.one": "{{count}} barkod atıldı (geçerli bir barkod değil)",
+  "import_eposnow.reply.file.note.bad_barcode.other": "{{count}} barkod atıldı (geçerli bir barkod değil)",
+  "import_eposnow.reply.file.note.unknown_vat.one": "{{count}} KDV oranı tanınmadı (kasanın varsayılanı kullanılır)",
+  "import_eposnow.reply.file.note.unknown_vat.other": "{{count}} KDV oranı tanınmadı (kasanın varsayılanı kullanılır)",
+  "import_eposnow.reply.file.note.cut_text.one": "{{count}} metin kasanın sınırına kısaltıldı",
+  "import_eposnow.reply.file.note.cut_text.other": "{{count}} metin kasanın sınırına kısaltıldı",
+  "import_eposnow.reply.file.note.no_name.one": "{{count}} ürün adı olmadığı için atlandı",
+  "import_eposnow.reply.file.note.no_name.other": "{{count}} ürün adı olmadığı için atlandı",
+  "import_eposnow.reply.file.error.too_large": "bu dosya, içe aktarmanın okuyabileceğinden büyük (32 MiB)",
+  "import_eposnow.reply.file.error.empty": "dosya boş ya da bir CSV dışa aktarımı değil",
+  "import_eposnow.reply.file.error.not_export": "bu bir Epos Now ürün dışa aktarımına benzemiyor (Name ile SalePriceIncTax veya SalePriceExTax sütunları gerekir)",
+  "import_eposnow.reply.file.error.unreadable": "dosya CSV dışa aktarımı olarak okunamadı",
+  "import_eposnow.reply.file.error.too_many": "bu dosyada kasanın tek seferde içe aktardığından fazla ürün var (20.000)",
+  "import_eposnow.reply.file.error.no_products": "dosyada içe aktarılacak ürün yok"
 }

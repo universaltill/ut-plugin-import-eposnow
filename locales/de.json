@@ -1,5 +1,6 @@
 {
   "import_eposnow.entry.label": "Epos Now (API)",
+  "import_eposnow.file.label": "Epos Now (Produktexport-Datei)",
   "import_eposnow.settings.api_key": "Epos Now API-Schlüssel",
   "import_eposnow.settings.api_key.help": "Legen Sie in Ihrem Epos Now Back Office ein API-Gerät an und kopieren Sie dessen Schlüssel hierher. Wird verschlüsselt gespeichert und nur zum Lesen Ihrer Epos Now-Daten verwendet.",
   "import_eposnow.settings.api_secret": "Epos Now API-Secret",
@@ -44,5 +45,25 @@
   "import_eposnow.reply.error.unexpected": "Epos Now hat eine unerwartete Antwort für {{resource}} gesendet",
   "import_eposnow.reply.error.too_large": "Eine Epos Now-Seite für {{resource}} ist größer als das Seitenlimit von {{limit}} MiB",
   "import_eposnow.reply.error.too_many_pages": "Epos Now {{resource}} hat mehr als {{limit}} Seiten; abgebrochen",
-  "import_eposnow.reply.error.too_many_records": "Epos Now {{resource}} hat mehr als 100.000 Datensätze; abgebrochen"
+  "import_eposnow.reply.error.too_many_records": "Epos Now {{resource}} hat mehr als 100.000 Datensätze; abgebrochen",
+  "import_eposnow.reply.file.read.one": "Epos-Now-Export: {{count}} Produkt gelesen, Bestand nicht in dieser Datei",
+  "import_eposnow.reply.file.read.other": "Epos-Now-Export: {{count}} Produkte gelesen, Bestand nicht in dieser Datei",
+  "import_eposnow.reply.file.note.grossed_up.one": "{{count}} Nettopreis mit der MwSt. auf Brutto umgerechnet",
+  "import_eposnow.reply.file.note.grossed_up.other": "{{count}} Nettopreise mit der MwSt. auf Brutto umgerechnet",
+  "import_eposnow.reply.file.note.net_no_vat.one": "{{count}} Nettopreis hatte keinen MwSt.-Satz und wurde unverändert importiert",
+  "import_eposnow.reply.file.note.net_no_vat.other": "{{count}} Nettopreise hatten keinen MwSt.-Satz und wurden unverändert importiert",
+  "import_eposnow.reply.file.note.bad_barcode.one": "{{count}} Barcode verworfen (kein gültiger Barcode)",
+  "import_eposnow.reply.file.note.bad_barcode.other": "{{count}} Barcodes verworfen (kein gültiger Barcode)",
+  "import_eposnow.reply.file.note.unknown_vat.one": "{{count}} MwSt.-Satz nicht erkannt (es gilt der Standard der Kasse)",
+  "import_eposnow.reply.file.note.unknown_vat.other": "{{count}} MwSt.-Sätze nicht erkannt (es gilt der Standard der Kasse)",
+  "import_eposnow.reply.file.note.cut_text.one": "{{count}} Text auf die zulässige Länge der Kasse gekürzt",
+  "import_eposnow.reply.file.note.cut_text.other": "{{count}} Texte auf die zulässige Länge der Kasse gekürzt",
+  "import_eposnow.reply.file.note.no_name.one": "{{count}} Produkt ohne Namen übersprungen",
+  "import_eposnow.reply.file.note.no_name.other": "{{count}} Produkte ohne Namen übersprungen",
+  "import_eposnow.reply.file.error.too_large": "diese Datei ist größer, als der Import lesen kann (32 MiB)",
+  "import_eposnow.reply.file.error.empty": "die Datei ist leer oder kein CSV-Export",
+  "import_eposnow.reply.file.error.not_export": "das sieht nicht nach einem Epos-Now-Produktexport aus (es braucht die Spalten Name und SalePriceIncTax oder SalePriceExTax)",
+  "import_eposnow.reply.file.error.unreadable": "die Datei konnte nicht als CSV-Export gelesen werden",
+  "import_eposnow.reply.file.error.too_many": "diese Datei enthält mehr Produkte, als die Kasse in einem Durchlauf importiert (20.000)",
+  "import_eposnow.reply.file.error.no_products": "die Datei enthält keine Produkte zum Importieren"
 }
