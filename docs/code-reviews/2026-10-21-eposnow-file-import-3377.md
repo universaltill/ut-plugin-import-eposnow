@@ -51,3 +51,7 @@ ut-cloud's import sandbox.
 
 **Verdict:** safe to merge, not to release until till 0.34.14 (the
 separator fix) is out. Deferred: ut-docs#4727.
+
+## Rebase onto main (ut-docs#4648)
+
+Main localised every reply (`import_eposnow.reply.*`, `textsFor`). The file entry now answers the same way: its read summary, notes and refusals are `import_eposnow.reply.file.*` keys in en/de/tr (plural forms, `refuse`/`errText`), replacing the removed `plural` helper. SDK pin taken from main.

@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"io"
 	"math"
 	"math/big"
@@ -67,29 +66,30 @@ type fileNotes struct {
 func handleFile(ev plugin.Event) (any, error) {
 	var req plugin.ImportRequest
 	if err := ev.Decode(&req); err != nil {
-		return fail("the import request could not be read"), nil
+		return fail(textsFor("").s("import_eposnow.reply.error.bad_request")), nil
 	}
+	t := textsFor(req.Locale)
 	switch {
 	case req.EntryKey != FileEntryKey:
-		return fail("unknown import entry"), nil
+		return fail(t.s("import_eposnow.reply.error.unknown_entry")), nil
 	case req.Mode != "preview" && req.Mode != "commit":
-		return fail("mode must be preview or commit"), nil
+		return fail(t.s("import_eposnow.reply.error.bad_mode")), nil
 	}
 	items := false
 	for _, e := range req.Entities {
 		items = items || e == "items"
 	}
 	if !items {
-		return fail("the Epos Now import needs the items entity (items:write)"), nil
+		return fail(t.s("import_eposnow.reply.error.needs_items")), nil
 	}
 
 	f := req.File()
 	defer f.Close()
 	n, err := runFile(&limitedReader{r: f, left: maxFileBytes + 1})
 	if err != nil {
-		return fail(err.Error()), nil
+		return fail(t.errText(err)), nil
 	}
-	return map[string]any{"ok": true, "message": n.message(), "counts": map[string]int{"items": n.rows}}, nil
+	return map[string]any{"ok": true, "message": n.message(t), "counts": map[string]int{"items": n.rows}}, nil
 }
 
 // limitedReader reads at most left bytes, then fails: the file is parsed
@@ -100,7 +100,7 @@ type limitedReader struct {
 	left int64
 }
 
-var errTooLarge = errors.New("this file is larger than the import reads (32 MiB)")
+var errTooLarge = refuse("import_eposnow.reply.file.error.too_large")
 
 func (l *limitedReader) Read(p []byte) (int, error) {
 	if l.left <= 0 {
@@ -169,7 +169,7 @@ func runFile(r io.Reader) (fileNotes, error) {
 		return n, errTooLarge
 	}
 	if err != nil {
-		return n, errors.New("the file is empty or is not a CSV export")
+		return n, refuse("import_eposnow.reply.file.error.empty")
 	}
 	idx := map[string]int{}
 	for i, h := range header {
@@ -183,7 +183,7 @@ func runFile(r io.Reader) (fileNotes, error) {
 	_, hasInc := idx["salepriceinctax"]
 	_, hasEx := idx["salepriceextax"]
 	if !hasName || (!hasInc && !hasEx) {
-		return n, errors.New("this does not look like an Epos Now product export (it needs the Name and SalePriceIncTax or SalePriceExTax columns)")
+		return n, refuse("import_eposnow.reply.file.error.not_export")
 	}
 
 	get := func(rec []string, col string) string {
@@ -213,14 +213,14 @@ func runFile(r io.Reader) (fileNotes, error) {
 			return n, errTooLarge
 		}
 		if err != nil {
-			return n, errors.New("the file could not be read as a CSV export")
+			return n, refuse("import_eposnow.reply.file.error.unreadable")
 		}
 		row, ok := mapFileRow(rec, get, seen, &n)
 		if !ok {
 			continue
 		}
 		if n.rows == maxFileRows {
-			return n, errors.New("this file has more products than the till imports in one run (20,000)")
+			return n, refuse("import_eposnow.reply.file.error.too_many")
 		}
 		n.rows++
 		buf = append(buf, row)
@@ -231,7 +231,7 @@ func runFile(r io.Reader) (fileNotes, error) {
 		}
 	}
 	if n.rows == 0 {
-		return n, errors.New("the file has no products to import")
+		return n, refuse("import_eposnow.reply.file.error.no_products")
 	}
 	return n, flush()
 }
@@ -239,7 +239,7 @@ func runFile(r io.Reader) (fileNotes, error) {
 // fileSubmitError is submitError worded for a file run.
 func fileSubmitError(err error) error {
 	if errors.Is(err, plugin.ErrQuota) {
-		return errors.New("this file has more products than the till imports in one run (20,000)")
+		return refuse("import_eposnow.reply.file.error.too_many")
 	}
 	return submitError(err)
 }
@@ -399,21 +399,25 @@ func parseDecimal(s string) (*big.Rat, bool) {
 	return r, ok
 }
 
-func (n fileNotes) message() string {
+func (n fileNotes) message(t texts) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "Epos Now export: %s read, stock not in this file", plural(n.rows, "product", "products"))
+	b.WriteString(t.n("import_eposnow.reply.file.read", n.rows))
 	var notes []string
-	add := func(c int, one, many, tail string) {
-		if c > 0 {
-			notes = append(notes, plural(c, one, many)+" "+tail)
+	for _, x := range []struct {
+		key string
+		c   int
+	}{
+		{"import_eposnow.reply.file.note.grossed_up", n.grossed},
+		{"import_eposnow.reply.file.note.net_no_vat", n.netNoVAT},
+		{"import_eposnow.reply.file.note.bad_barcode", n.badBarcodes},
+		{"import_eposnow.reply.file.note.unknown_vat", n.unknownVAT},
+		{"import_eposnow.reply.file.note.cut_text", n.cutText},
+		{"import_eposnow.reply.file.note.no_name", n.noName},
+	} {
+		if x.c > 0 {
+			notes = append(notes, t.n(x.key, x.c))
 		}
 	}
-	add(n.grossed, "net price", "net prices", "grossed up with VAT")
-	add(n.netNoVAT, "net price", "net prices", "had no VAT rate and were imported as they are")
-	add(n.badBarcodes, "barcode", "barcodes", "dropped (not a valid barcode)")
-	add(n.unknownVAT, "VAT rate", "VAT rates", "not recognised (left to the till's default)")
-	add(n.cutText, "text", "texts", "shortened to the till's limit")
-	add(n.noName, "product", "products", "skipped without a name")
 	if len(notes) > 0 {
 		b.WriteString(" (" + strings.Join(notes, "; ") + ")")
 	}
