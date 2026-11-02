@@ -55,3 +55,34 @@ separator fix) is out. Deferred: ut-docs#4727.
 ## Rebase onto main (ut-docs#4648)
 
 Main localised every reply (`import_eposnow.reply.*`, `textsFor`). The file entry now answers the same way: its read summary, notes and refusals are `import_eposnow.reply.file.*` keys in en/de/tr (plural forms, `refuse`/`errText`), replacing the removed `plural` helper. SDK pin taken from main.
+
+## Independent review 2026-11-03 (Opus 5.5; code by Sonnet 5.5)
+
+The 2026-10-21 table above was already a different-model review (Opus
+subagent on Sonnet code); the rebase commit (`reply.file.*` keys) was
+not reviewed until now. This pass covers the whole PR at the rebased head.
+
+| # | Finding | Severity | Outcome |
+|---|---|---|---|
+| 1 | A cell not valid UTF-8 (a Windows-1252 file) was silently stripped byte by byte: `Café £` imported as `Caf`, and the name link changed with it. The earlier record's "core refuses it per row" was wrong; `cleanText` hid it | high | fixed TDD: such a cell is decoded as Windows-1252 (`TestFileEntry_Windows1252CellsAreDecoded`, red first, red again with the fix reverted); README says so |
+| 2 | No test held the ≤500-rows-per-submit batching (mutant `len(buf)==batchSize` → never survived the suite) | medium | fixed: `TestFileEntry_SubmitsInBatchesOf500` (1,201 rows), fails under that mutant |
+| 3 | Unparsable price (`£2.00`, `-1`, `1,234.50`) leaves `price_minor` empty with no note in the plugin's answer | low | accepted: core's preview shows each such row as `price_invalid` (`catsync/row.go`), so it is not silent and nothing applies for it |
+| 4 | Two lines with the same name and no barcode/ArticleCode link by file order (`#2`); reordering the export swaps their links | low | accepted, inherent (no Id in the export); duplicate barcodes/SKUs are surfaced by core as `barcode_duplicate`/`sku_duplicate` |
+| 5 | Formula-looking names (`=…`) stored as text | info | not this plugin's surface (no CSV written here); core's exports own escaping |
+
+**Checked, no finding:** i18n — every `import_eposnow.reply.file.*` key the
+code uses exists in en/de/tr, key sets equal, placeholders identical, de/tr
+wording and plural forms read correctly; manifest 0.2.0 + `min_pos_version`
+0.34.14 match validate.sh; exact permission set unchanged (file entry adds
+no egress); no secrets or row content logged; sandboxed entry never touches
+Epos Now. Mutation checks (cp backup, restored): gross-up rate, SellOnTill,
+duplicate suffix, zero-gross fallback, row cap, bad-barcode count all
+killed; the BOM `head[3:]` mutant is equivalent (BOM bytes are never
+separators).
+
+**Gate:** gofmt, vet (native + wasip1), `go test ./...`, build.sh,
+validate.sh, guard-plugin-i18n.sh, shellcheck, check-version-bump.test.sh —
+all pass. No version bump needed (0.2.0 unreleased, still in this PR).
+
+**Verdict:** safe to merge once these fixes are pushed; release still waits
+on till 0.34.14.

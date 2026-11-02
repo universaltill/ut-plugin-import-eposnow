@@ -292,3 +292,44 @@ func TestFileEntry_QuotaWording(t *testing.T) {
 		t.Errorf("quota error for a file run = %v", err)
 	}
 }
+
+// Review 2026-11-03: an export saved as Windows-1252 (Excel's default on a
+// UK PC) must not lose its "é", "£" or "€": a cell that is not valid UTF-8
+// is read as Windows-1252, not stripped byte by byte.
+func TestFileEntry_Windows1252CellsAreDecoded(t *testing.T) {
+	csvText := "Name;SalePriceIncTax;CategoryId\r\nCaf\xe9 cr\xe8me \x80 \xa3;2.00;Caf\xe9\r\nPlain;1.00;\r\n"
+	h := fileHost(t, []byte(csvText))
+	if got := ask(t, filePayload("preview", len(csvText))); !got.OK {
+		t.Fatal(got)
+	}
+	r := rows(t, h)
+	if r[0]["name"] != "Café crème € £" || r[0]["category_path"].([]any)[0] != "Café" {
+		t.Errorf("Windows-1252 cell mangled: name %q, category %v", r[0]["name"], r[0]["category_path"])
+	}
+	if r[0]["external_id"] != "name:café crème € £" {
+		t.Errorf("link from a mangled name: %q", r[0]["external_id"])
+	}
+	if r[1]["name"] != "Plain" {
+		t.Errorf("ASCII row: %q", r[1]["name"])
+	}
+	if got := cleanText("Café"); got != "Café" {
+		t.Errorf("valid UTF-8 re-decoded: %q", got)
+	}
+}
+
+// Review 2026-11-03: a file past one batch is submitted in calls of ≤500
+// (the host refuses a bigger call), and every row arrives.
+func TestFileEntry_SubmitsInBatchesOf500(t *testing.T) {
+	var b strings.Builder
+	b.WriteString("Name;SalePriceIncTax;Barcode\r\n")
+	for i := 0; i < 1_201; i++ {
+		fmt.Fprintf(&b, "Item %d;1.00;%013d\r\n", i, i)
+	}
+	h := fileHost(t, []byte(b.String()))
+	if got := ask(t, filePayload("preview", b.Len())); !got.OK {
+		t.Fatal(got)
+	}
+	if n := len(rows(t, h)); n != 1_201 {
+		t.Errorf("rows submitted = %d, want 1201", n)
+	}
+}

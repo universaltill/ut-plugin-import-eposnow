@@ -43,7 +43,9 @@ exports it separately) and the recommended retail price `RRPrice`
 (ut-docs#4725). Files use `;`, `,` or tab as separator; up to 20,000
 products and 32 MiB. Prices must be plain decimals (`8.99`, `8,99`); a
 name, category or description is cleaned of line breaks and invisible
-characters. The file is read as UTF-8.
+characters. The file is read as UTF-8; a text cell that is not valid
+UTF-8 is read as Windows-1252 (a CSV saved on a UK Windows PC), so `é`,
+`£` and `€` survive.
 
 The file entry runs in the till's import sandbox: it can read the uploaded
 file and hand back rows, nothing else (no network, no settings).

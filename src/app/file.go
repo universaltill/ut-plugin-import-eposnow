@@ -249,7 +249,9 @@ func fileSubmitError(err error) error {
 // and other control characters into spaces, so one odd cell never costs
 // the whole row.
 func cleanText(s string) string {
-	s = strings.ToValidUTF8(s, "")
+	if !utf8.ValidString(s) {
+		s = decodeWindows1252(s)
+	}
 	return strings.Join(strings.Fields(strings.Map(func(r rune) rune {
 		switch {
 		case unicode.IsControl(r):
@@ -422,5 +424,32 @@ func (n fileNotes) message(t texts) string {
 		b.WriteString(" (" + strings.Join(notes, "; ") + ")")
 	}
 	b.WriteString(".")
+	return b.String()
+}
+
+// cp1252High maps Windows-1252's 0x80–0x9F bytes to runes; 0 is unassigned.
+var cp1252High = [32]rune{
+	'€', 0, '‚', 'ƒ', '„', '…', '†', '‡', 'ˆ', '‰', 'Š', '‹', 'Œ', 0, 'Ž', 0,
+	0, '‘', '’', '“', '”', '•', '–', '—', '˜', '™', 'š', '›', 'œ', 0, 'ž', 'Ÿ',
+}
+
+// decodeWindows1252 reads a cell that is not valid UTF-8 as Windows-1252,
+// the encoding a UK Windows PC saves a CSV in, so "Café £" survives instead
+// of losing its accents and pound signs. Unassigned bytes are dropped.
+func decodeWindows1252(s string) string {
+	var b strings.Builder
+	b.Grow(len(s) + len(s)/2)
+	for i := 0; i < len(s); i++ {
+		switch c := s[i]; {
+		case c < 0x80:
+			b.WriteByte(c)
+		case c < 0xA0:
+			if r := cp1252High[c-0x80]; r != 0 {
+				b.WriteRune(r)
+			}
+		default:
+			b.WriteRune(rune(c))
+		}
+	}
 	return b.String()
 }
